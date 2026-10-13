@@ -1,0 +1,23 @@
+
+def simpleDiv(dividend, divisor):
+    result = 0
+
+    while dividend >= divisor:
+        dividend = dividend - divisor
+        result += 1
+
+    return result
+
+
+def main():
+    dividend = int(input("Enter the dividend: "))
+    divisor = int(input("Enter the divisor: "))
+
+    if dividend < 0 or divisor <= 0:
+        print("Please enter valid positive numbers.")
+    else:
+        answer = simpleDiv(dividend, divisor)
+        print("The result is:", answer)
+
+
+main()
