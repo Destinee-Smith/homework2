@@ -1,0 +1,80 @@
+
+from graphics import *
+import math
+
+
+def drawPolygon(n):
+    angle = 360 / n
+    points = []
+
+    for i in range(n):
+        radians = math.radians(i * angle)
+
+        x = 200 + 100 * math.cos(radians)
+        y = 190 + 100 * math.sin(radians)
+
+        points.append(Point(x, y))
+
+    polygon = Polygon(points)
+    return polygon
+
+
+def insideButton(click, button):
+    p1 = button.getP1()
+    p2 = button.getP2()
+
+    return (min(p1.getX(), p2.getX()) <= click.getX()
+            <= max(p1.getX(), p2.getX())
+            and min(p1.getY(), p2.getY()) <= click.getY()
+            <= max(p1.getY(), p2.getY()))
+
+
+def graphPolygon(win, entry, button):
+    while True:
+        click = win.getMouse()
+
+        if insideButton(click, button):
+            break
+
+    n = int(entry.getText())
+
+    if n < 3:
+        n = 3
+
+    polygon = drawPolygon(n)
+    polygon.setOutline("blue")
+    polygon.setWidth(3)
+    polygon.draw(win)
+
+
+def main():
+    win = GraphWin("Polygon Graph", 400, 400)
+
+    label = Text(Point(100, 30), "Number of sides:")
+    label.draw(win)
+
+    entry = Entry(Point(230, 30), 5)
+    entry.setText("5")
+    entry.draw(win)
+
+    button = Rectangle(Point(150, 340), Point(250, 380))
+    button.setFill("lightblue")
+    button.draw(win)
+
+    buttonText = Text(Point(200, 360), "Graph")
+    buttonText.draw(win)
+
+    graphPolygon(win, entry, button)
+
+    buttonText.setText("Exit")
+
+    while True:
+        click = win.getMouse()
+
+        if insideButton(click, button):
+            break
+
+    win.close()
+
+
+main()
