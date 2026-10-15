@@ -1,0 +1,54 @@
+
+# Chapter 8 - Problem 3
+# Date Shift Cipher
+
+def get_shifts(date):
+    digits = date.replace("/", "").replace("-", "")
+    if not digits.isdigit() or not digits:
+        raise ValueError("Enter a valid numeric date.")
+    return [int(digit) for digit in digits]
+
+
+def encode_message(message, date):
+    shifts = get_shifts(date)
+    encoded = ""
+    position = 0
+
+    for letter in message.upper():
+        if "A" <= letter <= "Z":
+            shift = shifts[position % len(shifts)]
+            number = ord(letter) - ord("A")
+            encoded += chr((number + shift) % 26 + ord("A"))
+            position += 1
+        else:
+            encoded += letter
+
+    return encoded
+
+
+def decode_message(message, date):
+    shifts = get_shifts(date)
+    decoded = ""
+    position = 0
+
+    for letter in message.upper():
+        if "A" <= letter <= "Z":
+            shift = shifts[position % len(shifts)]
+            number = ord(letter) - ord("A")
+            decoded += chr((number - shift) % 26 + ord("A"))
+            position += 1
+        else:
+            decoded += letter
+
+    return decoded
+
+
+message = input("Enter a message: ")
+date = input("Enter a date (example 5/3/24): ")
+
+encrypted = encode_message(message, date)
+decrypted = decode_message(encrypted, date)
+
+print("\nOriginal Message:", message)
+print("Encrypted Message:", encrypted)
+print("Decrypted Message:", decrypted)
