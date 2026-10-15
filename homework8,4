@@ -1,0 +1,67 @@
+
+# Chapter 8 - Problem 4
+# Keyword Substitution Cipher
+
+import string
+
+
+def create_cipher_alphabet(keyword):
+    alphabet = string.ascii_uppercase
+    keyword = keyword.upper()
+
+    cipher_alphabet = ""
+
+    for letter in keyword:
+        if letter in alphabet and letter not in cipher_alphabet:
+            cipher_alphabet += letter
+
+    for letter in alphabet:
+        if letter not in cipher_alphabet:
+            cipher_alphabet += letter
+
+    return cipher_alphabet
+
+
+def encode_message(message, keyword):
+    alphabet = string.ascii_uppercase
+    cipher_alphabet = create_cipher_alphabet(keyword)
+
+    encoded = ""
+
+    for letter in message.upper():
+        if letter in alphabet:
+            index = alphabet.index(letter)
+            encoded += cipher_alphabet[index]
+        else:
+            encoded += letter
+
+    return encoded
+
+
+def decode_message(message, keyword):
+    alphabet = string.ascii_uppercase
+    cipher_alphabet = create_cipher_alphabet(keyword)
+
+    decoded = ""
+
+    for letter in message.upper():
+        if letter in cipher_alphabet:
+            index = cipher_alphabet.index(letter)
+            decoded += alphabet[index]
+        else:
+            decoded += letter
+
+    return decoded
+
+
+keyword = input("Enter a keyword: ")
+message = input("Enter a message: ")
+
+encrypted = encode_message(message, keyword)
+decrypted = decode_message(encrypted, keyword)
+
+print("\nKeyword:", keyword)
+print("Cipher Alphabet:", create_cipher_alphabet(keyword))
+print("Original Message:", message)
+print("Encrypted Message:", encrypted)
+print("Decrypted Message:", decrypted)
