@@ -1,0 +1,46 @@
+
+# Chapter 8 - Problem 1
+# Loan Amortization Schedule
+
+def amortization_schedule(P, r, k, N):
+    rate = r / k
+    total_payments = k * N
+
+    if rate == 0:
+        payment = P / total_payments
+    else:
+        payment = P * rate / (1 - (1 + rate) ** (-total_payments))
+
+    balance = P
+
+    print("\nLOAN AMORTIZATION SCHEDULE")
+    print(f"Loan Amount: ${P:,.2f}")
+    print(f"Annual Interest Rate: {r * 100:.2f}%")
+    print(f"Regular Payment: ${payment:,.2f}\n")
+
+    print(f"{'No.':<8}{'Payment':>14}{'Interest':>14}"
+          f"{'Principal':>14}{'Balance':>16}")
+    print("-" * 66)
+
+    for number in range(1, total_payments + 1):
+        interest = balance * rate
+        current_payment = min(payment, balance + interest)
+        principal = current_payment - interest
+        balance = max(0, balance - principal)
+
+        print(f"{number:<8}{current_payment:>14,.2f}"
+              f"{interest:>14,.2f}{principal:>14,.2f}"
+              f"{balance:>16,.2f}")
+
+    print("\nLoan amortization completed.")
+
+
+P = float(input("Enter loan amount: $"))
+r = float(input("Enter annual interest rate (%): ")) / 100
+k = int(input("Enter number of payments per year: "))
+N = int(input("Enter number of years: "))
+
+if P <= 0 or r < 0 or k <= 0 or N <= 0:
+    print("Please enter valid loan details.")
+else:
+    amortization_schedule(P, r, k, N)
