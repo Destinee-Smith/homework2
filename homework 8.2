@@ -1,0 +1,46 @@
+
+# Chapter 8 - Problem 2
+# Scytale Cipher
+
+def encrypt_scytale(message, rows):
+    message = "".join(c for c in message.upper() if c.isalpha())
+
+    if rows <= 0:
+        raise ValueError("Rows must be positive.")
+
+    columns = (len(message) + rows - 1) // rows
+    message = message.ljust(rows * columns, "X")
+
+    encrypted = ""
+
+    for row in range(rows):
+        for column in range(columns):
+            encrypted += message[column * rows + row]
+
+    return encrypted
+
+
+def decrypt_scytale(ciphertext, rows):
+    if rows <= 0:
+        raise ValueError("Rows must be positive.")
+
+    columns = len(ciphertext) // rows
+    decrypted = ""
+
+    for column in range(columns):
+        for row in range(rows):
+            decrypted += ciphertext[row * columns + column]
+
+    return decrypted
+
+
+message = input("Enter a message: ")
+rows = int(input("Enter number of rows: "))
+
+encrypted = encrypt_scytale(message, rows)
+decrypted = decrypt_scytale(encrypted, rows)
+
+print("\nOriginal Message:", message)
+print("Encrypted Message:", encrypted)
+print("Decrypted Message:", decrypted)
+print("Note: The decrypted text may contain padding X characters.")
