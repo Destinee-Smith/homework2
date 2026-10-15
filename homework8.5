@@ -1,0 +1,70 @@
+
+# Chapter 8 - Problem 5
+# Polybius Checkerboard Cipher
+
+def create_checkerboard():
+    return [
+        list("ABCDE"),
+        list("FGHIJ"),
+        list("KLMNO"),
+        list("PQRST"),
+        list("UVWXYZ")
+    ]
+
+
+def find_letter(checkerboard, letter):
+    for row in range(len(checkerboard)):
+        for column in range(len(checkerboard[row])):
+            if checkerboard[row][column] == letter:
+                return row, column
+
+    return None
+
+
+def encrypt_message(message, checkerboard):
+    ciphertext = []
+
+    for letter in message.upper():
+        if letter.isalpha():
+            position = find_letter(checkerboard, letter)
+
+            if position is not None:
+                row, column = position
+                ciphertext.append(str(row) + str(column))
+
+    return " ".join(ciphertext)
+
+
+def decrypt_message(ciphertext, checkerboard):
+    plaintext = ""
+
+    codes = ciphertext.split()
+
+    for code in codes:
+        if len(code) == 2 and code.isdigit():
+            row = int(code[0])
+            column = int(code[1])
+
+            if row < len(checkerboard):
+                if column < len(checkerboard[row]):
+                    plaintext += checkerboard[row][column]
+
+    return plaintext
+
+
+checkerboard = create_checkerboard()
+
+print("POLYBIUS CHECKERBOARD")
+print("  0 1 2 3 4 5")
+
+for row_number, row in enumerate(checkerboard):
+    print(row_number, " ".join(row))
+
+message = input("\nEnter a message to encrypt: ")
+
+encrypted = encrypt_message(message, checkerboard)
+decrypted = decrypt_message(encrypted, checkerboard)
+
+print("\nOriginal Message:", message)
+print("Encrypted Message:", encrypted)
+print("Decrypted Message:", decrypted)
