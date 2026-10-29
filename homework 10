@@ -1,0 +1,431 @@
+import math
+
+def amortization_report(principal, annual_rate, years, filename):
+    monthly_rate = annual_rate / 100 / 12
+    months = years * 12
+
+    if monthly_rate == 0:
+        payment = principal / months
+    else:
+        payment = principal * monthly_rate / (
+            1 - (1 + monthly_rate) ** (-months)
+        )
+
+    balance = principal
+    total_interest = 0
+
+    with open(filename, "w", encoding="utf-8") as file:
+        file.write("LOAN AMORTIZATION REPORT\n")
+        file.write("=" * 70 + "\n")
+        file.write(f"Loan Amount: ${principal:,.2f}\n")
+        file.write(f"Annual Interest Rate: {annual_rate:.2f}%\n")
+        file.write(f"Loan Term: {years} years\n")
+        file.write(f"Monthly Payment: ${payment:,.2f}\n\n")
+
+        file.write(
+            f"{'Month':<8}{'Payment':>12}"
+            f"{'Interest':>12}{'Principal':>14}"
+            f"{'Balance':>14}\n"
+        )
+
+        for month in range(1, months + 1):
+            interest = balance * monthly_rate
+            principal_paid = payment - interest
+
+            if month == months or principal_paid > balance:
+                principal_paid = balance
+                actual_payment = principal_paid + interest
+            else:
+                actual_payment = payment
+
+            balance -= principal_paid
+            total_interest += interest
+
+            file.write(
+                f"{month:<8}"
+                f"${actual_payment:>11,.2f}"
+                f"${interest:>11,.2f}"
+                f"${principal_paid:>13,.2f}"
+                f"${balance:>13,.2f}\n"
+            )
+
+        file.write("\n")
+        file.write(f"Total Interest: ${total_interest:,.2f}\n")
+        file.write(
+            f"Total Paid: ${principal + total_interest:,.2f}\n"
+        )
+
+    print("Amortization report saved to:", filename)
+
+
+def main():
+    principal = float(input("Enter loan amount: "))
+    annual_rate = float(input("Enter annual interest rate (%): "))
+    years = int(input("Enter loan term in years: "))
+    filename = input("Enter output filename: ")
+
+    if principal <= 0 or annual_rate < 0 or years <= 0:
+        print("Please enter valid loan information.")
+        return
+
+    amortization_report(
+        principal, annual_rate, years, filename
+    )
+
+
+if __name__ == "__main__":
+    main()
+
+import ast
+import random
+import string
+
+def read_path(filename):
+    with open(filename, "r", encoding="utf-8") as file:
+        rows, cols = map(int, file.readline().split())
+        path = []
+
+        for line in file:
+            if line.strip():
+                position = ast.literal_eval(line.strip())
+                path.append(position)
+
+    if rows <= 0 or cols <= 0:
+        raise ValueError("Grid dimensions must be positive.")
+
+    if len(path) != rows * cols:
+        raise ValueError("Path must visit every grid location.")
+
+    expected = {
+        (r, c)
+        for r in range(rows)
+        for c in range(cols)
+    }
+
+    if set(path) != expected:
+        raise ValueError("Path has invalid or repeated positions.")
+
+    return rows, cols, path
+
+
+def clean_message(message):
+    return "".join(
+        char for char in message.upper()
+        if char in string.ascii_uppercase
+    )
+
+
+def encrypt(message, rows, cols, path):
+    message = clean_message(message)
+    capacity = rows * cols
+
+    if len(message) > capacity:
+        raise ValueError("Message is too long for this grid.")
+
+    padding = "".join(
+        random.choices(
+            string.ascii_uppercase,
+            k=capacity - len(message)
+        )
+    )
+
+    message += padding
+
+    grid = [
+        list(message[r * cols:(r + 1) * cols])
+        for r in range(rows)
+    ]
+
+    ciphertext = "".join(
+        grid[r][c] for r, c in path
+    )
+
+    return ciphertext, grid
+
+
+def decrypt(ciphertext, rows, cols, path, original_length):
+    grid = [
+        [""] * cols for _ in range(rows)
+    ]
+
+    for (r, c), char in zip(path, ciphertext):
+        grid[r][c] = char
+
+    message = "".join(
+        "".join(row) for row in grid
+    )
+
+    return message[:original_length]
+
+
+def main():
+    filename = input("Enter path filename: ")
+    rows, cols, path = read_path(filename)
+
+    message = input("Enter message to encrypt: ")
+    original_length = len(clean_message(message))
+
+    ciphertext, grid = encrypt(
+        message, rows, cols, path
+    )
+
+    print("\nOriginal Grid:")
+    for row in grid:
+        print(" ".join(row))
+
+    print("\nEncrypted Message:", ciphertext)
+
+    plaintext = decrypt(
+        ciphertext, rows, cols, path, original_length
+    )
+
+    print("Decrypted Message:", plaintext)
+
+
+if __name__ == "__main__":
+    main()
+
+  import matplotlib.pyplot as plt
+import string
+
+def frequency_analysis(filename):
+    with open(filename, "r", encoding="utf-8") as file:
+        text = file.read().upper()
+
+    total_characters = len(text)
+
+    letters = string.ascii_uppercase
+    counts = {letter: 0 for letter in letters}
+
+    for char in text:
+        if char in counts:
+            counts[char] += 1
+
+    if total_characters == 0:
+        print("The file is empty.")
+        return
+
+    frequencies = [
+        counts[letter] / total_characters * 100
+        for letter in letters
+    ]
+
+    plt.figure(figsize=(12, 6))
+    plt.bar(letters, frequencies)
+
+    plt.title("Letter Frequency Analysis")
+    plt.xlabel("Letters")
+    plt.ylabel("Frequency (%)")
+
+    plt.ylim(0, max(frequencies) * 1.1 if max(frequencies) else 1)
+    plt.grid(axis="y", alpha=0.3)
+
+    plt.show()
+
+    print("\nLetter Frequency Report")
+
+    for letter, frequency in zip(letters, frequencies):
+        print(f"{letter}: {frequency:.2f}%")
+
+
+def main():
+    filename = input("Enter text filename: ")
+
+    try:
+        frequency_analysis(filename)
+    except FileNotFoundError:
+        print("File not found. Please check the filename.")
+
+
+if __name__ == "__main__":
+    main()
+
+import os
+import string
+import matplotlib.pyplot as plt
+
+def analyze_python_files(folder):
+    letters = string.ascii_uppercase
+
+    counts = {letter: 0 for letter in letters}
+    total_characters = 0
+    files_processed = 0
+
+    for filename in os.listdir(folder):
+        if filename.endswith(".py"):
+            filepath = os.path.join(folder, filename)
+
+            if os.path.isfile(filepath):
+                with open(
+                    filepath,
+                    "r",
+                    encoding="utf-8",
+                    errors="replace"
+                ) as file:
+                    text = file.read().upper()
+
+                total_characters += len(text)
+                files_processed += 1
+
+                for char in text:
+                    if char in counts:
+                        counts[char] += 1
+
+    if files_processed == 0:
+        print("No Python files were found.")
+        return
+
+    frequencies = [
+        counts[letter] / total_characters * 100
+        for letter in letters
+    ]
+
+    plt.figure(figsize=(12, 6))
+    plt.bar(letters, frequencies)
+
+    plt.title("Python Code Letter Frequency Analysis")
+    plt.xlabel("Letters")
+    plt.ylabel("Frequency (%)")
+
+    plt.ylim(
+        0,
+        max(frequencies) * 1.1 if max(frequencies) else 1
+    )
+
+    plt.grid(axis="y", alpha=0.3)
+    plt.show()
+
+    print("Python files analyzed:", files_processed)
+    print("Total characters:", total_characters)
+
+    for letter, frequency in zip(letters, frequencies):
+        print(f"{letter}: {frequency:.2f}%")
+
+
+def main():
+    folder = input("Enter folder path: ")
+
+    if os.path.isdir(folder):
+        analyze_python_files(folder)
+    else:
+        print("Invalid folder path.")
+
+
+if __name__ == "__main__":
+    main()
+
+import urllib.request
+import string
+import matplotlib.pyplot as plt
+
+def download_text(url):
+    with urllib.request.urlopen(url, timeout=30) as response:
+        data = response.read()
+
+    return data.decode("utf-8", errors="replace")
+
+
+def frequency_analysis(text):
+    letters = string.ascii_uppercase
+
+    counts = {letter: 0 for letter in letters}
+
+    # Count all characters in the lower 256 Unicode values.
+    total_characters = 0
+
+    for char in text.upper():
+        if ord(char) < 256:
+            total_characters += 1
+
+            if char in counts:
+                counts[char] += 1
+
+    frequencies = {}
+
+    for letter in letters:
+        if total_characters > 0:
+            frequencies[letter] = (
+                counts[letter] / total_characters * 100
+            )
+        else:
+            frequencies[letter] = 0
+
+    return counts, frequencies
+
+
+def display_graph(frequencies):
+    letters = list(frequencies.keys())
+    values = list(frequencies.values())
+
+    plt.figure(figsize=(12, 6))
+    plt.bar(letters, values)
+
+    plt.title("Online Text Letter Frequency Analysis")
+    plt.xlabel("Letters")
+    plt.ylabel("Frequency (%)")
+
+    plt.ylim(
+        0,
+        max(values) * 1.1 if max(values) else 1
+    )
+
+    plt.grid(axis="y", alpha=0.3)
+    plt.show()
+
+
+def save_results(filename, counts, frequencies):
+    with open(filename, "w", encoding="utf-8") as file:
+        file.write("Letter,Count,Frequency (%)\n")
+
+        for letter in string.ascii_uppercase:
+            file.write(
+                f"{letter},{counts[letter]},"
+                f"{frequencies[letter]:.4f}\n"
+            )
+
+    print("Frequency results saved to:", filename)
+
+
+def main():
+    print("Online Letter Frequency Analysis")
+
+    url = input(
+        "Enter text URL (press Enter for Shakespeare): "
+    )
+
+    if not url:
+        url = (
+            "https://www.gutenberg.org/"
+            "cache/epub/100/pg100.txt"
+        )
+
+    filename = input("Enter output CSV filename: ")
+
+    if not filename:
+        filename = "frequency_results.csv"
+
+    try:
+        print("Downloading text...")
+        text = download_text(url)
+
+        counts, frequencies = frequency_analysis(text)
+
+        print("Download completed.")
+
+        display_graph(frequencies)
+        save_results(filename, counts, frequencies)
+
+        print("\nLetter Frequency Results:")
+
+        for letter in string.ascii_uppercase:
+            print(
+                f"{letter}: {counts[letter]} occurrences, "
+                f"{frequencies[letter]:.2f}%"
+            )
+
+    except Exception as error:
+        print("An error occurred:", error)
+
+
+if __name__ == "__main__":
+    main()
