@@ -1,0 +1,479 @@
+import tkinter as tk
+import math
+
+GRAVITY = 0.20
+RESTITUTION = 0.60
+FLOOR = 420
+RADIUS = 15
+
+def main():
+    root = tk.Tk()
+    root.title("Three Bouncing Balls")
+
+    canvas = tk.Canvas(root, width=600, height=460, bg="white")
+    canvas.pack()
+
+    balls = []
+
+    for x, height, color in [
+        (120, 300, "red"),
+        (300, 230, "blue"),
+        (480, 370, "green")
+    ]:
+        item = canvas.create_oval(
+            x - RADIUS,
+            FLOOR - height - RADIUS,
+            x + RADIUS,
+            FLOOR - height + RADIUS,
+            fill=color
+        )
+
+        balls.append({
+            "item": item,
+            "height": float(height),
+            "velocity": 0.0,
+            "bounces": 0
+        })
+
+    canvas.create_line(
+        0, FLOOR + RADIUS,
+        600, FLOOR + RADIUS,
+        width=2
+    )
+
+    def animate():
+        moving = False
+
+        for ball in balls:
+            if ball["height"] <= 0 and ball["velocity"] == 0:
+                continue
+
+            moving = True
+
+            ball["velocity"] -= GRAVITY
+            ball["height"] += ball["velocity"]
+
+            if ball["height"] <= 0:
+                ball["height"] = 0
+                ball["bounces"] += 1
+
+                ball["velocity"] = (
+                    abs(ball["velocity"]) * math.sqrt(RESTITUTION)
+                )
+
+                if ball["velocity"] ** 2 / (2 * GRAVITY) < 0.001:
+                    ball["velocity"] = 0
+
+            x1, _, x2, _ = canvas.coords(ball["item"])
+            y = FLOOR - ball["height"]
+
+            canvas.coords(
+                ball["item"],
+                x1, y - RADIUS,
+                x2, y + RADIUS
+            )
+
+        if moving:
+            root.after(16, animate)
+
+    animate()
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
+ALPHABET = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
+
+CHECKERBOARD = tuple(
+    tuple(ALPHABET[r * 5:(r + 1) * 5])
+    for r in range(5)
+)
+
+def locate(letter):
+    letter = letter.upper().replace("J", "I")
+
+    for row, letters in enumerate(CHECKERBOARD):
+        for col, char in enumerate(letters):
+            if char == letter:
+                return (row, col)
+
+    raise ValueError("Use letters A-Z only.")
+
+def encrypt(message):
+    result = []
+
+    for char in message.upper():
+        if char.isalpha():
+            row, col = locate(char)
+
+            result.append(
+                str(row + 1) + str(col + 1)
+            )
+
+    return " ".join(result)
+
+def decrypt(ciphertext):
+    digits = "".join(
+        ch for ch in ciphertext if ch.isdigit()
+    )
+
+    if len(digits) % 2:
+        raise ValueError("Ciphertext needs pairs of digits.")
+
+    result = []
+
+    for i in range(0, len(digits), 2):
+        position = (
+            int(digits[i]) - 1,
+            int(digits[i + 1]) - 1
+        )
+
+        row, col = position
+
+        if not (0 <= row < 5 and 0 <= col < 5):
+            raise ValueError("Coordinates must be 1 through 5.")
+
+        result.append(CHECKERBOARD[row][col])
+
+    return "".join(result)
+
+if __name__ == "__main__":
+    message = input("Message to encrypt: ")
+
+    cipher = encrypt(message)
+
+    print("Checkerboard:")
+
+    for row in CHECKERBOARD:
+        print(" ".join(row))
+
+    print("Encrypted:", cipher)
+    print("Decrypted:", decrypt(cipher))
+
+  import math
+import random
+import string
+
+def clean(text):
+    return "".join(
+        ch for ch in text.upper()
+        if ch in string.ascii_uppercase
+    )
+
+def column_order(keyword):
+    return sorted(
+        range(len(keyword)),
+        key=lambda i: (keyword[i], i)
+    )
+
+def encrypt(message, keyword):
+    message = clean(message)
+    keyword = clean(keyword)
+
+    if not keyword:
+        raise ValueError("Keyword must contain letters.")
+
+    if not message:
+        raise ValueError("Message must contain letters.")
+
+    cols = len(keyword)
+    rows = math.ceil(len(message) / cols)
+
+    padded = message + "".join(
+        random.choices(
+            string.ascii_uppercase,
+            k=rows * cols - len(message)
+        )
+    )
+
+    grid = [
+        list(padded[r * cols:(r + 1) * cols])
+        for r in range(rows)
+    ]
+
+    cipher = "".join(
+        grid[r][c]
+        for c in column_order(keyword)
+        for r in range(rows)
+    )
+
+    return cipher, grid
+
+def decrypt(cipher, keyword, original_length):
+    keyword = clean(keyword)
+    cols = len(keyword)
+
+    if not cols or len(cipher) % cols:
+        raise ValueError("Invalid keyword or ciphertext length.")
+
+    rows = len(cipher) // cols
+
+    grid = [
+        [""] * cols
+        for _ in range(rows)
+    ]
+
+    pos = 0
+
+    for c in column_order(keyword):
+        for r in range(rows):
+            grid[r][c] = cipher[pos]
+            pos += 1
+
+    return "".join(
+        "".join(row) for row in grid
+    )[:original_length]
+
+if __name__ == "__main__":
+    message = input("Message: ")
+    keyword = input("Keyword: ")
+
+    cipher, grid = encrypt(message, keyword)
+
+    print("Grid:")
+
+    for row in grid:
+        print(" ".join(row))
+
+    print("Encrypted:", cipher)
+
+    print(
+        "Decrypted:",
+        decrypt(cipher, keyword, len(clean(message)))
+    )
+
+  import random
+import string
+
+ROWS = 5
+COLS = 6
+
+def clean(text):
+    return "".join(
+        c for c in text.upper()
+        if c in string.ascii_uppercase
+    )
+
+def spiral_path(rows, cols):
+    path = []
+
+    top = 0
+    bottom = rows - 1
+    left = 0
+    right = cols - 1
+
+    while top <= bottom and left <= right:
+
+        for c in range(left, right + 1):
+            path.append((top, c))
+
+        top += 1
+
+        for r in range(top, bottom + 1):
+            path.append((r, right))
+
+        right -= 1
+
+        if top <= bottom:
+            for c in range(right, left - 1, -1):
+                path.append((bottom, c))
+
+            bottom -= 1
+
+        if left <= right:
+            for r in range(bottom, top - 1, -1):
+                path.append((r, left))
+
+            left += 1
+
+    return path
+
+PATH = spiral_path(ROWS, COLS)
+
+def encrypt(message):
+    message = clean(message)
+
+    if len(message) > ROWS * COLS:
+        raise ValueError("Maximum is 30 letters.")
+
+    padding = "".join(
+        random.choices(
+            string.ascii_uppercase,
+            k=ROWS * COLS - len(message)
+        )
+    )
+
+    data = message + padding
+
+    grid = [
+        list(data[r * COLS:(r + 1) * COLS])
+        for r in range(ROWS)
+    ]
+
+    cipher = "".join(
+        grid[r][c]
+        for r, c in PATH
+    )
+
+    return cipher, grid
+
+def decrypt(cipher, original_length):
+
+    if len(cipher) != ROWS * COLS:
+        raise ValueError("Ciphertext must contain 30 letters.")
+
+    grid = [
+        [""] * COLS
+        for _ in range(ROWS)
+    ]
+
+    for (r, c), char in zip(
+        reversed(PATH),
+        reversed(cipher)
+    ):
+        grid[r][c] = char
+
+    return "".join(
+        "".join(row) for row in grid
+    )[:original_length]
+
+if __name__ == "__main__":
+    message = input("Message (up to 30 letters): ")
+
+    cipher, grid = encrypt(message)
+
+    print("Grid:")
+
+    for row in grid:
+        print(" ".join(row))
+
+    print("Encrypted:", cipher)
+
+    print(
+        "Decrypted:",
+        decrypt(cipher, len(clean(message)))
+    )
+
+  import random
+import string
+
+def clean(text):
+    return "".join(
+        c for c in text.upper()
+        if c in string.ascii_uppercase
+    )
+
+def order(keyword):
+    return sorted(
+        range(len(keyword)),
+        key=lambda i: (keyword[i], i)
+    )
+
+def make_path(rows, cols):
+    return [
+        (r, c)
+        for r in range(rows)
+        for c in (
+            range(cols)
+            if r % 2 == 0
+            else range(cols - 1, -1, -1)
+        )
+    ]
+
+def encrypt(message, keyword, rows):
+    message = clean(message)
+    keyword = clean(keyword)
+
+    if not keyword or rows < 1:
+        raise ValueError(
+            "Provide a keyword and a positive row count."
+        )
+
+    cols = len(keyword)
+    capacity = rows * cols
+
+    if len(message) > capacity:
+        raise ValueError(
+            "Message is too long for the selected grid."
+        )
+
+    padded = message + "".join(
+        random.choices(
+            string.ascii_uppercase,
+            k=capacity - len(message)
+        )
+    )
+
+    grid = [
+        list(padded[r * cols:(r + 1) * cols])
+        for r in range(rows)
+    ]
+
+    reordered = [
+        [grid[r][c] for c in order(keyword)]
+        for r in range(rows)
+    ]
+
+    path = make_path(rows, cols)
+
+    cipher = "".join(
+        reordered[r][c]
+        for r, c in path
+    )
+
+    return cipher, len(message), grid
+
+def decrypt(cipher, keyword, rows, original_length):
+    keyword = clean(keyword)
+    cols = len(keyword)
+
+    if not cols or rows < 1 or len(cipher) != rows * cols:
+        raise ValueError(
+            "Keyword, grid size or ciphertext is invalid."
+        )
+
+    reordered = [
+        [""] * cols
+        for _ in range(rows)
+    ]
+
+    path = make_path(rows, cols)
+
+    for (r, c), char in zip(
+        reversed(path),
+        reversed(cipher)
+    ):
+        reordered[r][c] = char
+
+    grid = [
+        [""] * cols
+        for _ in range(rows)
+    ]
+
+    for new_col, old_col in enumerate(order(keyword)):
+        for r in range(rows):
+            grid[r][old_col] = reordered[r][new_col]
+
+    return "".join(
+        "".join(row) for row in grid
+    )[:original_length]
+
+if __name__ == "__main__":
+    message = input("Message: ")
+    keyword = input("Keyword: ")
+    rows = int(input("Number of grid rows: "))
+
+    cipher, length, grid = encrypt(
+        message, keyword, rows
+    )
+
+    print("Original grid:")
+
+    for row in grid:
+        print(" ".join(row))
+
+    print("Encrypted:", cipher)
+
+    print(
+        "Decrypted:",
+        decrypt(cipher, keyword, rows, length)
+    )
